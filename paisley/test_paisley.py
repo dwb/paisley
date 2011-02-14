@@ -314,6 +314,17 @@ class CouchDBTestCase(TestCase):
         return self._checkParseDeferred(d)
 
 
+    def test_openRewrittenView(self):
+        """
+        Test openRewrittenView.
+        """
+        d = self.client.openRewrittenView("mydb", "viewdoc", "myview")
+        self.assertEquals(self.client.uri,
+                "/mydb/_design/viewdoc/_rewrite/myview")
+        self.assertEquals(self.client.kwargs["method"], "GET")
+        return self._checkParseDeferred(d)
+
+
     def test_openViewWithQuery(self):
         """
         Test openView with query arguments.

@@ -42,7 +42,6 @@ except ImportError:
 
 SOCK_TIMEOUT = 300
 
-
 class CouchDB(object):
     """
     CouchDB client: hold methods for accessing a couchDB.
@@ -84,7 +83,7 @@ class CouchDB(object):
         """
         for methname in ["createDB", "deleteDB", "infoDB", "listDoc",
                          "openDoc", "saveDoc", "deleteDoc", "openView",
-                         "tempView"]:
+                         "openRewrittenView", "tempView"]:
             method = getattr(self, methname)
             newMethod = partial(method, dbName)
             setattr(self, methname, newMethod)
@@ -235,11 +234,8 @@ class CouchDB(object):
 
     # View operations
 
-    def openView(self, dbName, docId, viewId, **kwargs):
-        """
-        Open a view of a document in a given database.
-        """
-        uri = "/%s/_design/%s/_view/%s" % (dbName, quote(docId), viewId)
+    def _openViewByPath(self, dbName, docId, viewPath, **kwargs):
+        uri = "/%s/_design/%s/%s" % (dbName, quote(docId), viewPath)
 
         for arg in kwargs.keys():
             kwargs[arg] = json.dumps(kwargs[arg])
@@ -257,6 +253,21 @@ class CouchDB(object):
             # if not keys we just encode everything in the url
             uri += "?%s" % (urlencode(kwargs),)
             return self.get(uri).addCallback(self.parseResult)
+
+
+    def openView(self, dbName, docId, viewId, **kwargs):
+        """
+        Open a view of a document in a given database.
+        """
+        return self._openViewByPath(dbName, docId, '_view/%s' % viewId, **kwargs)
+
+
+    def openRewrittenView(self, dbName, docId, viewPath, **kwargs):
+        """
+        Open a view given by a path to be rewritten.
+        """
+        return self._openViewByPath(dbName, docId, '_rewrite/%s' % viewPath,
+                **kwargs)
 
 
     def addViews(self, document, views):
