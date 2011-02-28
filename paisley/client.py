@@ -83,7 +83,7 @@ class CouchDB(object):
         """
         for methname in ["createDB", "deleteDB", "infoDB", "listDoc",
                          "openDoc", "saveDoc", "deleteDoc", "openView",
-                         "openRewrittenView", "tempView"]:
+                         "openViewByPath", "openRewrittenView", "tempView"]:
             method = getattr(self, methname)
             newMethod = partial(method, dbName)
             setattr(self, methname, newMethod)
@@ -234,7 +234,7 @@ class CouchDB(object):
 
     # View operations
 
-    def _openViewByPath(self, dbName, docId, viewPath, **kwargs):
+    def openViewByPath(self, dbName, docId, viewPath, **kwargs):
         uri = "/%s/_design/%s/%s" % (dbName, quote(docId), viewPath)
 
         for arg in kwargs.keys():
@@ -259,14 +259,14 @@ class CouchDB(object):
         """
         Open a view of a document in a given database.
         """
-        return self._openViewByPath(dbName, docId, '_view/%s' % viewId, **kwargs)
+        return self.openViewByPath(dbName, docId, '_view/%s' % viewId, **kwargs)
 
 
     def openRewrittenView(self, dbName, docId, viewPath, **kwargs):
         """
         Open a view given by a path to be rewritten.
         """
-        return self._openViewByPath(dbName, docId, '_rewrite/%s' % viewPath,
+        return self.openViewByPath(dbName, docId, '_rewrite/%s' % viewPath,
                 **kwargs)
 
 
